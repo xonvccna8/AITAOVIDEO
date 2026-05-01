@@ -6,6 +6,7 @@ import type {
 
 const DEFAULT_VIDEO_ENDPOINT = "/api/ai-video/generate";
 const DEFAULT_VIDEO_STATUS_ENDPOINT = "/api/ai-video/status";
+const DEFAULT_VIDEO_MERGE_ENDPOINT = "/api/ai-video/merge";
 const VIDEO_POLL_LIMIT = 120;
 
 const supportCopy: Record<LearningSupportType, string> = {
@@ -112,6 +113,57 @@ export const generateVideoClip = async ({
     title,
     prompt,
     url,
+    kind: "clip",
+  };
+};
+
+export const mergeVideoClips = async ({
+  title,
+  videos,
+  onProgress,
+}: {
+  title: string;
+  videos: GeneratedVideo[];
+  onProgress?: (message: string) => void;
+}): Promise<GeneratedVideo> => {
+  if (videos.length < 2) {
+    throw new Error("Can it nhat 2 video de ghep.");
+  }
+
+  const mergeUrl =
+    import.meta.env.VITE_AI_VIDEO_MERGE_URL?.trim() || DEFAULT_VIDEO_MERGE_ENDPOINT;
+
+  onProgress?.(`Dang tai va ghep ${videos.length} video...`);
+  const response = await fetch(mergeUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title,
+      videos: videos.map((video) => ({
+        url: video.url,
+        title: video.title,
+      })),
+    }),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(data.error ?? `API ghep video loi ${response.status}.`);
+  }
+
+  const blob = await response.blob();
+  if (!blob.size) {
+    throw new Error("API ghep video tra ve file rong.");
+  }
+
+  onProgress?.("Da ghep xong video.");
+  return {
+    id: crypto.randomUUID(),
+    title,
+    prompt: `Video ghep tu ${videos.length} canh: ${videos.map((video) => video.title).join("; ")}`,
+    url: URL.createObjectURL(blob),
+    kind: "merged",
+    sceneCount: videos.length,
   };
 };
 

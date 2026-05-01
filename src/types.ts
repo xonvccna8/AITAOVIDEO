@@ -44,6 +44,8 @@ export interface GeneratedVideo {
   url: string;
   title: string;
   prompt: string;
+  kind?: "clip" | "merged";
+  sceneCount?: number;
 }
 
 export interface ChatMessage {

@@ -16,6 +16,7 @@ import {
   ChevronRight,
   CircleAlert,
   Copy,
+  Download,
   Eye,
   Film,
   GraduationCap,
@@ -49,6 +50,7 @@ import {
   buildLesson,
   buildMathPrompt,
   generateVideoClip,
+  mergeVideoClips,
 } from "./services/aiClient";
 import {
   createClass,
@@ -831,6 +833,7 @@ function VideoStudio({
     try {
       const total = seriesCount;
       const results: GeneratedVideo[] = [];
+      let mergedVideo: GeneratedVideo | null = null;
 
       for (let index = 1; index <= total; index += 1) {
         const prompt = buildMathPrompt({
@@ -863,8 +866,30 @@ function VideoStudio({
       }
 
       setGeneratedVideos(results);
-      setCurrentStep("Hoan thanh");
       onSaved();
+
+      if (total > 1 && results.length > 1) {
+        setCurrentStep("Dang ghep 5 video thanh 1...");
+        try {
+          mergedVideo = await mergeVideoClips({
+            title: `${topic} - day du 5 canh`,
+            videos: results,
+            onProgress: setCurrentStep,
+          });
+          setGeneratedVideos([mergedVideo, ...results]);
+          onToast("Da ghep xong 5 video. Ban co the xem va tai xuong ngay.", "success");
+        } catch (mergeError) {
+          setCurrentStep("Hoan thanh tao 5 video, ghep tu dong that bai.");
+          onToast(
+            mergeError instanceof Error
+              ? `Da tao 5 video, nhung ghep tu dong loi: ${mergeError.message}`
+              : "Da tao 5 video, nhung ghep tu dong loi.",
+            "error",
+          );
+        }
+      }
+
+      setCurrentStep("Hoan thanh");
     } catch (error) {
       onToast(error instanceof Error ? error.message : "Khong the tao video.", "error");
     } finally {
@@ -893,7 +918,7 @@ function VideoStudio({
         title="Tao video ngan Toan hoc"
         actions={
           <Button icon={isGenerating ? LoaderCircle : WandSparkles} onClick={handleGenerate} disabled={isGenerating}>
-            {isGenerating ? "Dang tao" : seriesCount === 5 ? "Tao 5 video" : "Tao 1 video"}
+            {isGenerating ? "Dang tao" : seriesCount === 5 ? "Tao va ghep 5 video" : "Tao 1 video"}
           </Button>
         }
       />
@@ -939,7 +964,7 @@ function VideoStudio({
                 onChange={(event) => setSeriesCount(Number(event.target.value) === 5 ? 5 : 1)}
               >
                 <option value={1}>1 video</option>
-                <option value={5}>5 video dong nhat</option>
+                <option value={5}>5 video + ghep thanh 1</option>
               </select>
             </label>
 
@@ -1014,7 +1039,24 @@ function VideoStudio({
               <article key={video.id} className="glass-card overflow-hidden">
                 <video src={video.url} controls className="aspect-video w-full bg-slate-950 object-cover" />
                 <div className="p-4">
-                  <h3 className="font-bold text-white">{video.title}</h3>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-white">{video.title}</h3>
+                      {video.kind === "merged" ? (
+                        <span className="mt-2 inline-flex rounded-full bg-teal-300/15 px-3 py-1 text-xs font-black uppercase tracking-wide text-teal-100">
+                          Video ghep {video.sceneCount ?? 5} canh
+                        </span>
+                      ) : null}
+                    </div>
+                    <a
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/10 text-slate-100 transition hover:bg-white/15"
+                      href={video.url}
+                      download={`${video.title}.mp4`}
+                      title="Tai video"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </div>
                   <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-300">{video.prompt}</p>
                 </div>
               </article>

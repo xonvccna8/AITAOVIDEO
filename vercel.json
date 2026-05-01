@@ -7,6 +7,9 @@
     },
     "api/ai-video/status.js": {
       "maxDuration": 60
+    },
+    "api/ai-video/merge.js": {
+      "maxDuration": 300
     }
   }
 }
