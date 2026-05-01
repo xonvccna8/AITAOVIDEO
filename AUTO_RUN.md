@@ -63,6 +63,24 @@ Hoac bam file:
 BUILD_APK_NOW.bat
 ```
 
+## Deploy Vercel
+
+```powershell
+.\DEPLOY_VERCEL_NOW.ps1
+```
+
+Hoac deploy preview:
+
+```powershell
+.\DEPLOY_VERCEL_NOW.ps1 -Preview
+```
+
+Production URL:
+
+```text
+https://aitaovideo.vercel.app
+```
+
 ## Cau hinh API
 
 File `.env.local` chi nam tren may local va da duoc ignore khoi Git. Neu may khac
