@@ -1,0 +1,6 @@
+{
+    "cmake.ignoreCMakeListsMissing": true,
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "kiroAgent.configureMCP": "Disabled",
+    "terminal.integrated.cwd": "${env:LOCALAPPDATA}\\HistovisionAsciiWorkspace\\Histovision"
+}

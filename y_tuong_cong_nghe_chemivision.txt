@@ -1,0 +1,46 @@
+1) Ý TƯỞNG
+- Xây dựng Histovision – nền tảng học Lịch sử Việt Nam tương tác, giúp học sinh “nhìn – nghe – hỏi – hiểu” thông qua hỏi–đáp theo ngữ cảnh, dòng thời gian, hình ảnh, video tư liệu, và kể chuyện lịch sử bằng các clip ngắn dễ nhớ.
+- Điểm nhấn: cơ chế “5 video – 1 trận đánh” tạo đồng thời 5 clip (hai chỉ huy, binh sĩ, hậu cần–dân sự, bản đồ–diễn biến) rồi tự động ghép thành một phim hoàn chỉnh; kèm hệ thống quiz thích ứng, flashcard lặp lại ngắt quãng, lộ trình học cá nhân hóa và bản đồ thời–không gian Việt Nam tương tác.
+
+2) CÔNG NGHỆ
+- Nền tảng: Flutter/Dart đa nền tảng (Android, iOS, Web, Desktop).
+- AI/LLM: OpenAI & Google Gemini (tóm tắt, hỏi–đáp có trích dẫn, dựng outline clip, tạo narration/subtitle).
+- Tìm kiếm tư liệu: YouTube Data/Search API; tích hợp trình phát video trong ứng dụng.
+- Media: FFmpeg/ffmpeg-kit (dự kiến) để dựng/ghép clip, chuẩn hóa âm thanh, chuyển cảnh, phụ đề; stereo hóa ảnh tư liệu.
+- Kiến trúc dịch vụ: openai_service, gemini_service, youtube_search_service, gallery_service, ai_video_service; cấu hình qua core/config; quản lý khóa trong secrets (tuân thủ bảo mật khi phát hành).
+- Lưu trữ: caching cục bộ media/metadata; gói ngoại tuyến cho vùng kết nối yếu.
+- Hạ tầng build: Gradle (Android), CocoaPods (iOS); script PowerShell/Shell hỗ trợ cài đặt và khắc phục plugin.
+
+3) CÁCH LÀM CỤ THỂ (Roadmap triển khai)
+- Giai đoạn 1 – MVP (6–8 tuần):
+  * Hỏi–đáp theo ngữ cảnh có trích dẫn; màn hình sự kiện/nhân vật với dòng thời gian, hình ảnh, mô tả ngắn.
+  * Tìm–xem video YouTube trong app; gallery lưu ảnh/video/tư liệu yêu thích; quiz cơ bản + flashcard.
+  * Tính năng 5 clip song song (phiên bản đơn giản): tạo 5 outline và dựng clip từ ảnh + chú thích + thuyết minh; ghép tuyến tính thành 1 video; xuất phụ đề SRT.
+- Giai đoạn 2 – Beta (tới tháng 3):
+  * Bản đồ thời–không gian VN tương tác (gắn mốc sự kiện); stereo hóa ảnh; chuyển cảnh theo nhịp/beat; tiêu chuẩn loudness và màu sắc.
+  * Quiz thích ứng theo năng lực; lộ trình học cá nhân hóa theo khối lớp/mục tiêu thi; “Giải thích bằng 60 giây” cho sự kiện.
+  * Nâng cấp 5 clip: bản đồ động (motion map), ký hiệu tối giản, nhãn thời gian; ghép theo timeline mốc T1→T5.
+- Giai đoạn 3 – Phát hành:
+  * Tối ưu hiệu năng dựng/ghép, preset thẩm mỹ; mở rộng thư viện tư liệu/nguồn; gói ngoại tuyến; báo cáo tiến độ cho giáo viên.
+  * Chuẩn hóa trích dẫn/đạo đức học thuật trên toàn nội dung; hỗ trợ tiếp cận (phụ đề, TTS giọng Việt vùng miền).
+
+4) TÍNH MỚI
+- Chuỗi “nguồn tư liệu → tóm tắt có trích dẫn → clip/film đa góc nhìn → quiz/flashcard” liền mạch trong một ứng dụng.
+- Cơ chế “5 video – 1 trận đánh” sản xuất song song, rồi ghép tự động theo nhãn thời gian/ngữ nghĩa để kể chuyện lịch sử đa chiều.
+- Bản đồ thời–không gian gắn timeline sự kiện Việt Nam, cho phép học theo chiều không gian và mốc thời gian đồng thời.
+
+5) TÍNH SÁNG TẠO
+- “Kể chuyện bằng thị giác và tương tác”: ảnh tư liệu được stereo hóa, bản đồ động, chuyển cảnh theo nhịp, phụ đề rõ ràng – giúp nội dung ngắn gọn nhưng giàu ngữ cảnh.
+- Trò chuyện vai nhân vật lịch sử (persona) để giải thích nguyên nhân–kết quả–bối cảnh; quiz thích ứng + flashcard giúp nhớ lâu và học có mục tiêu.
+- Chế độ học 5–10–15 phút; video “60 giây giải thích sự kiện” thân thiện mạng xã hội, dễ lan tỏa.
+
+6) TÍNH KHẢ THI
+- Công nghệ, thư viện và API sẵn có (Flutter, OpenAI/Gemini, YouTube API, FFmpeg/ffmpeg-kit) giảm chi phí R&D; phần lớn xử lý có thể thực hiện phía client.
+- Kiến trúc dịch vụ rõ ràng giúp mở rộng tuyến tính; quy trình dựng 5 clip song song rút ngắn thời gian, sau đó ghép thống nhất hình–âm–phụ đề.
+- Rủi ro kỹ thuật (hiệu năng dựng, chất lượng ghép) có lộ trình giảm thiểu: bắt đầu đơn giản, tối ưu dần preset, và cho phép xử lý serverless khi cần.
+
+7) Ý NGHĨA
+- Giáo dục: biến lịch sử thành trải nghiệm trực quan, ngắn gọn, dễ nhớ; tăng hứng thú và năng lực tư duy bối cảnh, so sánh nguồn, phản biện.
+- Bảo tồn – phổ biến: số hóa, “kể lại” tư liệu lịch sử Việt Nam bằng hình–âm hiện đại; khuyến khích học sinh kết nối di sản địa phương.
+- Cộng đồng – nhà trường: hỗ trợ giáo viên với lộ trình học, đề minh họa, báo cáo tiến độ; học sinh có portfolio số, dự án nhóm, forum an toàn.
+

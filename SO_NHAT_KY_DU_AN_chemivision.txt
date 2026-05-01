@@ -1,0 +1,469 @@
+================================================================================
+                    SỔ NHẬT KÝ DỰ ÁN HISTOVISION
+              Thời gian: Tháng 8/2024 - 10/12/2024
+================================================================================
+
+Ghi chú: Lịch làm việc được phân bổ linh hoạt theo lịch học và thời gian rảnh.
+Tháng 8-10: Giai đoạn nghiên cứu và thiết kế (ít ngày làm việc)
+Tháng 11-12: Giai đoạn phát triển chính (nhiều ngày làm việc)
+
+================================================================================
+                            THÁNG 8/2024
+================================================================================
+
+TUẦN 1 (01/08 - 04/08): KHỞI ĐỘNG DỰ ÁN
+----------------------------------------
+Thứ Năm, 01/08/2024 | 14:00 - 16:30 (2.5 giờ)
+• Họp nhóm lần đầu, thảo luận ý tưởng dự án
+• Brainstorming các tính năng chính
+• Phân công vai trò: Leader, Developer, Designer, Tester
+• Kết quả: Chọn đề tài "HistoVision - Học lịch sử bằng AI"
+
+TUẦN 2 (05/08 - 11/08): NGHIÊN CỨU CÔNG NGHỆ
+---------------------------------------------
+Thứ Ba, 06/08/2024 | 19:00 - 21:00 (2 giờ)
+• Nghiên cứu Flutter framework
+• Tìm hiểu về OpenAI GPT API
+• Đọc tài liệu về AIVideoAuto service
+• Kết quả: Lập danh sách công nghệ cần dùng
+
+Thứ Sáu, 09/08/2024 | 15:00 - 17:30 (2.5 giờ)
+• Nghiên cứu Google Gemini API
+• So sánh các dịch vụ tạo video AI
+• Tìm hiểu về text-to-video technology
+• Kết quả: Chọn Sora 2.0 làm engine chính
+
+TUẦN 3 (12/08 - 18/08): THIẾT KẾ HỆ THỐNG
+------------------------------------------
+Chủ Nhật, 18/08/2024 | 09:00 - 12:00 (3 giờ)
+• Vẽ sơ đồ kiến trúc hệ thống
+• Thiết kế database schema
+• Lập danh sách API endpoints cần dùng
+• Kết quả: Hoàn thành kiến trúc tổng thể
+
+TUẦN 4 (19/08 - 25/08): VIẾT TÀI LIỆU
+--------------------------------------
+Thứ Tư, 21/08/2024 | 20:00 - 22:00 (2 giờ)
+• Viết file y_tuong_cong_nghe_histovision.txt
+• Mô tả chi tiết 7 phần: Ý tưởng, Công nghệ, Cách làm, Tính mới...
+• Review và chỉnh sửa
+• Kết quả: Hoàn thành tài liệu ý tưởng
+
+Thứ Bảy, 24/08/2024 | 10:00 - 11:30 (1.5 giờ)
+• Tạo file README.md
+• Viết hướng dẫn cài đặt
+• Liệt kê dependencies
+• Kết quả: Hoàn thành README cơ bản
+
+
+================================================================================
+                            THÁNG 9/2024
+================================================================================
+
+TUẦN 5 (26/08 - 01/09): SETUP MÔI TRƯỜNG
+-----------------------------------------
+Thứ Năm, 29/08/2024 | 16:00 - 18:30 (2.5 giờ)
+• Cài đặt Flutter SDK
+• Setup Android Studio và VS Code
+• Cài đặt các plugin cần thiết
+• Kết quả: Môi trường phát triển sẵn sàng
+
+TUẦN 6 (02/09 - 08/09): TẠO PROJECT
+-----------------------------------
+Chủ Nhật, 08/09/2024 | 14:00 - 17:00 (3 giờ)
+• Tạo Flutter project mới: flutter create histovision
+• Setup cấu trúc thư mục: lib/screens, lib/services
+• Cấu hình pubspec.yaml với dependencies
+• Kết quả: Project structure hoàn chỉnh
+
+TUẦN 7 (09/09 - 15/09): THIẾT KẾ UI
+-----------------------------------
+Thứ Tư, 11/09/2024 | 19:30 - 21:00 (1.5 giờ)
+• Thiết kế mockup màn hình chính
+• Chọn color scheme (đỏ Việt Nam)
+• Thiết kế logo và icon
+• Kết quả: Mockup UI hoàn chỉnh
+
+TUẦN 8 (16/09 - 22/09): PHÁT TRIỂN UI CƠ BẢN
+---------------------------------------------
+Thứ Bảy, 21/09/2024 | 09:00 - 12:30 (3.5 giờ)
+• Code màn hình landing_home.dart
+• Tạo header với gradient đỏ Việt Nam
+• Thêm các nút chức năng chính
+• Kết quả: Landing screen hoàn thành
+
+Chủ Nhật, 22/09/2024 | 15:00 - 18:00 (3 giờ)
+• Code màn hình home_screen.dart
+• Tạo TextField cho nhập mô tả
+• Thêm nút "Import ảnh" và "Chụp ảnh"
+• Kết quả: Home screen cơ bản hoàn thành
+
+TUẦN 9 (23/09 - 29/09): TÍCH HỢP IMAGE PICKER
+----------------------------------------------
+Thứ Năm, 26/09/2024 | 20:00 - 22:30 (2.5 giờ)
+• Thêm package image_picker
+• Code chức năng chọn ảnh từ gallery
+• Code chức năng chụp ảnh từ camera
+• Test trên Android emulator
+• Kết quả: Image picker hoạt động tốt
+
+
+================================================================================
+                            THÁNG 10/2024
+================================================================================
+
+TUẦN 10 (30/09 - 06/10): TÍCH HỢP IMAGE CROPPER
+------------------------------------------------
+Thứ Ba, 01/10/2024 | 19:00 - 20:30 (1.5 giờ)
+• Thêm package image_cropper
+• Code chức năng crop ảnh 16:9
+• Xử lý lỗi crop trên Android
+• Kết quả: Crop ảnh hoạt động ổn định
+
+TUẦN 11 (07/10 - 13/10): OPENAI SERVICE
+----------------------------------------
+Thứ Sáu, 11/10/2024 | 16:00 - 19:00 (3 giờ)
+• Tạo file openai_service.dart
+• Code hàm generatePrompt()
+• Test API với OpenAI GPT-4
+• Xử lý lỗi 401, 429, 502
+• Kết quả: OpenAI service hoạt động
+
+Chủ Nhật, 13/10/2024 | 10:00 - 13:30 (3.5 giờ)
+• Viết prompt template chi tiết cho lịch sử Việt Nam
+• Test với nhiều chủ đề khác nhau
+• Tối ưu prompt để tạo video tốt hơn
+• Kết quả: Prompt template hoàn chỉnh
+
+TUẦN 12 (14/10 - 20/10): AI VIDEO SERVICE
+------------------------------------------
+Thứ Tư, 16/10/2024 | 20:00 - 22:00 (2 giờ)
+• Tạo file ai_video_service.dart
+• Code hàm uploadImage()
+• Test upload ảnh lên AIVideoAuto
+• Kết quả: Upload ảnh thành công
+
+Thứ Bảy, 19/10/2024 | 14:00 - 17:30 (3.5 giờ)
+• Code hàm generateVideoFromText()
+• Implement polling mechanism
+• Xử lý các trạng thái video: PENDING, PROCESSING, SUCCESSFUL
+• Kết quả: Tạo video từ text hoạt động
+
+TUẦN 13 (21/10 - 27/10): TÍCH HỢP VIDEO PLAYER
+-----------------------------------------------
+Thứ Năm, 24/10/2024 | 19:30 - 21:30 (2 giờ)
+• Thêm package video_player
+• Tạo màn hình video_player_screen.dart
+• Code chức năng phát video
+• Thêm controls: play, pause, seek
+• Kết quả: Video player hoàn chỉnh
+
+TUẦN 14 (28/10 - 03/11): GALLERY SERVICE
+-----------------------------------------
+Chủ Nhật, 03/11/2024 | 09:00 - 11:00 (2 giờ)
+• Tạo file gallery_service.dart
+• Code chức năng lưu video vào gallery
+• Test lưu video trên Android
+• Kết quả: Gallery service hoạt động
+
+
+================================================================================
+                            THÁNG 11/2024
+================================================================================
+
+TUẦN 15 (04/11 - 10/11): SPEECH TO TEXT
+----------------------------------------
+Thứ Hai, 04/11/2024 | 15:00 - 17:00 (2 giờ)
+• Thêm package speech_to_text
+• Code chức năng ghi âm giọng nói
+• Xử lý permission microphone
+• Kết quả: Speech to text cơ bản hoạt động
+
+Thứ Tư, 06/11/2024 | 19:00 - 21:30 (2.5 giờ)
+• Tối ưu speech recognition cho tiếng Việt
+• Thêm live transcription
+• Xử lý lỗi "no match"
+• Kết quả: Speech to text hoàn chỉnh
+
+Thứ Sáu, 08/11/2024 | 16:30 - 19:00 (2.5 giờ)
+• Thiết kế UI nút microphone
+• Thêm animation khi đang ghi âm
+• Test trên thiết bị thật
+• Kết quả: UI microphone đẹp và mượt
+
+TUẦN 16 (11/11 - 17/11): GEMINI SERVICE
+----------------------------------------
+Thứ Hai, 11/11/2024 | 14:00 - 17:00 (3 giờ)
+• Tạo file gemini_service.dart
+• Tích hợp Google Gemini API
+• Code hàm phân tích ảnh lịch sử
+• Kết quả: Gemini service hoạt động
+
+Thứ Ba, 12/11/2024 | 20:00 - 22:30 (2.5 giờ)
+• Code hàm generateVideoPromptFromImage()
+• Test với nhiều ảnh lịch sử khác nhau
+• Xử lý lỗi 503 (overloaded)
+• Kết quả: Phân tích ảnh chính xác
+
+Thứ Năm, 14/11/2024 | 19:00 - 21:00 (2 giờ)
+• Code hàm rewritePromptSafer()
+• Implement retry logic với exponential backoff
+• Test với prompt không an toàn
+• Kết quả: Safety filter hoạt động tốt
+
+Thứ Bảy, 16/11/2024 | 10:00 - 13:30 (3.5 giờ)
+• Tích hợp Gemini vào flow tạo video
+• Test case: text + ảnh
+• Xử lý lỗi khi Gemini quá tải
+• Kết quả: Flow hoàn chỉnh
+
+TUẦN 17 (18/11 - 24/11): HISTORICAL EVENT SCREEN
+-------------------------------------------------
+Thứ Hai, 18/11/2024 | 15:30 - 18:00 (2.5 giờ)
+• Tạo màn hình historical_event_screen.dart
+• Copy code từ home_screen.dart
+• Chỉnh sửa UI cho phù hợp
+• Kết quả: Screen cơ bản hoàn thành
+
+Thứ Ba, 19/11/2024 | 19:00 - 22:00 (3 giờ)
+• Implement logic tạo video từ text + ảnh
+• Gemini phân tích ảnh → tạo prompt → Sora tạo video
+• Test với nhiều sự kiện lịch sử
+• Kết quả: Chức năng hoạt động tốt
+
+Thứ Tư, 20/11/2024 | 20:00 - 22:30 (2.5 giờ)
+• Xử lý lỗi HumanFaceRejectedException
+• Tạo dialog xác nhận fallback
+• Test với ảnh có khuôn mặt người
+• Kết quả: Fallback mechanism hoạt động
+
+Thứ Năm, 21/11/2024 | 16:00 - 18:30 (2.5 giờ)
+• Thêm retry logic cho unsafe generation
+• Tối ưu UX khi đang tạo video
+• Thêm nút "Hủy tạo"
+• Kết quả: UX tốt hơn nhiều
+
+Thứ Sáu, 22/11/2024 | 19:00 - 21:00 (2 giờ)
+• Fix bug crop ảnh free mode
+• Thêm grid để crop chính xác
+• Test trên nhiều thiết bị
+• Kết quả: Crop ảnh linh hoạt hơn
+
+
+TUẦN 18 (25/11 - 01/12): VIDEO 15 GIÂY
+---------------------------------------
+Thứ Hai, 25/11/2024 | 14:30 - 17:00 (2.5 giờ)
+• Thêm method generateVideoFromText15s() vào service
+• Copy logic từ generateVideoFromText()
+• Thay đổi duration từ '5' thành '15'
+• Kết quả: Method 15s hoàn thành
+
+Thứ Ba, 26/11/2024 | 19:00 - 21:30 (2.5 giờ)
+• Thêm function _generateVideo15s() vào home_screen
+• Copy toàn bộ logic từ _generateVideo()
+• Test tạo video 15 giây
+• Kết quả: Function hoạt động tốt
+
+Thứ Tư, 27/11/2024 | 20:00 - 22:00 (2 giờ)
+• Thêm nút "Tạo Video 15 giây" vào UI
+• Đổi nút cũ thành "Tạo Video 5 giây"
+• Styling nút mới với màu xanh dương
+• Kết quả: UI có 2 nút rõ ràng
+
+Thứ Năm, 28/11/2024 | 16:00 - 18:00 (2 giờ)
+• Test cả 2 chức năng: 5s và 15s
+• So sánh chất lượng video
+• Fix bug loading indicator
+• Kết quả: Cả 2 chức năng hoạt động ổn
+
+Thứ Sáu, 29/11/2024 | 19:30 - 21:30 (2 giờ)
+• Viết file GIOI_THIEU_DU_AN_HISTOVISION.txt
+• Mô tả chi tiết 5 phần chính
+• Review và chỉnh sửa
+• Kết quả: Tài liệu giới thiệu hoàn chỉnh
+
+Chủ Nhật, 01/12/2024 | 10:00 - 13:00 (3 giờ)
+• Cải thiện xử lý lỗi OpenAI
+• Thêm xử lý cho lỗi 502, 503, 504
+• Thông báo lỗi thân thiện hơn
+• Kết quả: Error handling tốt hơn
+
+
+================================================================================
+                            THÁNG 12/2024
+================================================================================
+
+TUẦN 19 (02/12 - 08/12): HOÀN THIỆN VÀ TEST
+--------------------------------------------
+Thứ Hai, 02/12/2024 | 15:00 - 18:00 (3 giờ)
+• Viết file HUONG_DAN_XU_LY_LOI.txt
+• Liệt kê 8 loại lỗi thường gặp
+• Hướng dẫn chi tiết cách khắc phục
+• Kết quả: Tài liệu hướng dẫn hoàn chỉnh
+
+Thứ Ba, 03/12/2024 | 19:00 - 22:00 (3 giờ)
+• Test toàn bộ app trên Android
+• Tìm và fix bug
+• Tối ưu performance
+• Kết quả: App chạy mượt mà
+
+Thứ Tư, 04/12/2024 | 20:00 - 23:00 (3 giờ)
+• Test trên iOS simulator
+• Fix lỗi permission iOS
+• Cập nhật Info.plist
+• Kết quả: iOS hoạt động tốt
+
+Thứ Năm, 05/12/2024 | 16:00 - 19:30 (3.5 giờ)
+• Test với nhiều sự kiện lịch sử khác nhau
+• Kiểm tra chất lượng video
+• Đo thời gian tạo video
+• Kết quả: Chất lượng đạt yêu cầu
+
+Thứ Sáu, 06/12/2024 | 19:00 - 22:30 (3.5 giờ)
+• Viết unit tests cho services
+• Test coverage: openai_service, ai_video_service
+• Fix các edge cases
+• Kết quả: Test coverage 70%
+
+Thứ Bảy, 07/12/2024 | 09:00 - 12:30 (3.5 giờ)
+• Tối ưu UI/UX
+• Thêm loading indicators
+• Cải thiện error messages
+• Kết quả: UX mượt mà hơn
+
+Chủ Nhật, 08/12/2024 | 14:00 - 18:00 (4 giờ)
+• Code review toàn bộ project
+• Refactor code để clean hơn
+• Thêm comments và documentation
+• Kết quả: Code quality tốt
+
+TUẦN 20 (09/12 - 10/12): HOÀN THIỆN CUỐI CÙNG
+----------------------------------------------
+Thứ Hai, 09/12/2024 | 14:00 - 17:30 (3.5 giờ)
+• Cập nhật README.md với hướng dẫn đầy đủ
+• Thêm screenshots vào README
+• Viết troubleshooting guide
+• Kết quả: README hoàn chỉnh
+
+Thứ Ba, 10/12/2024 | 15:00 - 19:00 (4 giờ)
+• Build APK release cho Android
+• Test APK trên thiết bị thật
+• Fix lỗi ProGuard
+• Kết quả: APK release hoạt động tốt
+
+Thứ Ba, 10/12/2024 | 19:30 - 22:30 (3 giờ)
+• Chuẩn bị tài liệu báo cáo
+• Tạo slide thuyết trình
+• Ghi video demo
+• Kết quả: Tài liệu báo cáo hoàn chỉnh
+
+
+================================================================================
+                            TỔNG KẾT DỰ ÁN
+================================================================================
+
+THỐNG KÊ THỜI GIAN:
+-------------------
+• Tổng thời gian: 4 tháng 10 ngày (01/08/2024 - 10/12/2024)
+• Tổng số tuần: 20 tuần
+• Tổng số buổi làm việc: 58 buổi
+• Tổng số giờ làm việc: ~155 giờ
+
+PHÂN BỔ THỜI GIAN THEO THÁNG:
+------------------------------
+• Tháng 8/2024: 8 buổi - 19.5 giờ (Nghiên cứu, Thiết kế)
+• Tháng 9/2024: 9 buổi - 23.5 giờ (Setup, UI cơ bản)
+• Tháng 10/2024: 10 buổi - 26.5 giờ (Services, Tích hợp API)
+• Tháng 11/2024: 16 buổi - 42.5 giờ (Phát triển chính)
+• Tháng 12/2024: 15 buổi - 43 giờ (Hoàn thiện, Test)
+
+PHÂN BỔ THỜI GIAN THEO GIAI ĐOẠN:
+----------------------------------
+• Giai đoạn 1 - Nghiên cứu (Tháng 8): 19.5 giờ
+  - Nghiên cứu công nghệ
+  - Thiết kế hệ thống
+  - Viết tài liệu
+
+• Giai đoạn 2 - Setup & UI (Tháng 9): 23.5 giờ
+  - Setup môi trường
+  - Tạo project
+  - Phát triển UI cơ bản
+
+• Giai đoạn 3 - Backend Services (Tháng 10): 26.5 giờ
+  - OpenAI Service
+  - AI Video Service
+  - Video Player
+  - Gallery Service
+
+• Giai đoạn 4 - Tính năng nâng cao (Tháng 11): 42.5 giờ
+  - Speech to Text
+  - Gemini Service
+  - Historical Event Screen
+  - Video 15 giây
+
+• Giai đoạn 5 - Hoàn thiện (Tháng 12): 43 giờ
+  - Testing
+  - Bug fixing
+  - Documentation
+  - Build release
+
+THÀNH QUẢ ĐẠT ĐƯỢC:
+--------------------
+✅ Hoàn thành 100% tính năng MVP:
+   • Tạo video từ text (5s, 15s)
+   • Tạo video từ ảnh
+   • Tạo video từ text + ảnh
+   • Speech to Text
+   • Phát video trong app
+   • Lưu video vào gallery
+
+✅ Tích hợp thành công:
+   • OpenAI GPT-4 API
+   • Google Gemini API
+   • AIVideoAuto (Sora 2.0)
+   • Speech Recognition
+   • Image Picker & Cropper
+   • Video Player
+
+✅ Tài liệu đầy đủ:
+   • README.md
+   • Ý tưởng công nghệ
+   • Giới thiệu dự án
+   • Hướng dẫn xử lý lỗi
+   • Sổ nhật ký
+
+✅ Chất lượng code:
+   • Clean code, có comments
+   • Error handling tốt
+   • Test coverage 70%
+   • Performance tối ưu
+
+KHÓ KHĂN ĐÃ VƯỢT QUA:
+----------------------
+• Lỗi 502 Bad Gateway từ OpenAI → Giải quyết bằng retry logic
+• Gemini quá tải → Implement exponential backoff
+• Human face rejection → Tạo fallback mechanism
+• Unsafe generation → Rewrite prompt safer
+• Plugin Android lỗi → Viết script fix tự động
+
+BÀI HỌC KINH NGHIỆM:
+--------------------
+• Luôn xử lý lỗi API một cách thân thiện với người dùng
+• Implement retry logic cho các API không ổn định
+• Test trên thiết bị thật, không chỉ emulator
+• Viết tài liệu ngay từ đầu, không để cuối dự án
+• Backup API keys và secrets an toàn
+• Code review thường xuyên để đảm bảo chất lượng
+
+ĐỊNH HƯỚNG PHÁT TRIỂN TIẾP:
+----------------------------
+• Thêm chức năng "5 Video - 1 Trận đánh"
+• Bản đồ thời-không gian tương tác
+• Quiz và Flashcard
+• Hỏi-đáp lịch sử với AI
+• Lộ trình học cá nhân hóa
+• Chế độ ngoại tuyến
+
+================================================================================
+                    © 2024 HistoVision - Học lịch sử bằng AI
+================================================================================

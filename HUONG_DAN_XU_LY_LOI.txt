@@ -1,0 +1,407 @@
+================================================================================
+                    HƯỚNG DẪN XỬ LÝ LỖI - HISTOVISION
+================================================================================
+
+Tài liệu này hướng dẫn cách xử lý các lỗi thường gặp khi sử dụng HistoVision.
+
+================================================================================
+1. LỖI KẾT NỐI OPENAI (502 BAD GATEWAY, 503 SERVICE UNAVAILABLE)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "OpenAI đang bảo trì hoặc quá tải"
+• Thông báo: "Lỗi kết nối OpenAI (502)" hoặc "(503)"
+• App không tạo được video, hiển thị lỗi HTML từ OpenAI
+
+NGUYÊN NHÂN:
+------------
+• Máy chủ OpenAI đang quá tải (nhiều người dùng cùng lúc)
+• OpenAI đang bảo trì hệ thống
+• Kết nối Internet không ổn định
+• API key đã hết hạn hoặc hết quota
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Đợi 2-3 phút rồi thử lại
+   - Lỗi 502/503 thường tự khắc phục sau vài phút
+   - Không cần làm gì, chỉ cần đợi
+
+✅ Bước 2: Kiểm tra trạng thái OpenAI
+   - Truy cập: https://status.openai.com
+   - Xem có thông báo bảo trì hay sự cố không
+   - Nếu có, đợi OpenAI khắc phục
+
+✅ Bước 3: Kiểm tra kết nối Internet
+   - Mở trình duyệt, thử truy cập Google.com
+   - Kiểm tra WiFi/4G có hoạt động không
+   - Thử chuyển đổi giữa WiFi và 4G
+
+✅ Bước 4: Kiểm tra API key
+   - Đăng nhập: https://platform.openai.com/api-keys
+   - Kiểm tra API key còn hoạt động không
+   - Kiểm tra Usage: https://platform.openai.com/usage
+   - Nếu hết quota, nạp thêm credit hoặc đợi reset hàng tháng
+
+✅ Bước 5: Thử lại với mô tả ngắn gọn hơn
+   - Lỗi 504 (timeout) có thể do mô tả quá dài
+   - Rút ngắn mô tả xuống 1-2 câu
+   - Ví dụ: "Trận Bạch Đằng năm 938" thay vì mô tả dài dòng
+
+PHÒNG TRÁNH:
+------------
+• Sử dụng app vào giờ ít người (sáng sớm, đêm khuya)
+• Chuẩn bị mô tả ngắn gọn, rõ ràng
+• Kiểm tra kết nối Internet trước khi tạo video
+• Theo dõi quota OpenAI thường xuyên
+
+
+================================================================================
+2. LỖI API KEY KHÔNG HỢP LỆ (401 UNAUTHORIZED)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "OpenAI API key không hợp lệ"
+• Thông báo: "Vui lòng kiểm tra lại API key trong Settings"
+• Lỗi 401 Unauthorized
+
+NGUYÊN NHÂN:
+------------
+• API key sai hoặc đã bị xóa
+• API key đã hết hạn
+• API key bị vô hiệu hóa do vi phạm chính sách OpenAI
+• Copy/paste API key bị thừa khoảng trắng
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Lấy API key mới
+   - Đăng nhập: https://platform.openai.com/api-keys
+   - Nhấn "Create new secret key"
+   - Copy API key (chỉ hiển thị 1 lần!)
+   - Lưu vào nơi an toàn
+
+✅ Bước 2: Cập nhật API key trong app
+   - Mở file: lib/screens/home_screen.dart
+   - Tìm dòng: final OpenAIService _openAIService = OpenAIService(
+   - Thay thế API key cũ bằng key mới
+   - Lưu file và build lại app
+
+✅ Bước 3: Kiểm tra format API key
+   - API key phải bắt đầu bằng "sk-" hoặc "sk-proj-"
+   - Không có khoảng trắng đầu/cuối
+   - Độ dài khoảng 50-60 ký tự
+
+✅ Bước 4: Test API key
+   - Sử dụng Postman hoặc curl để test:
+   
+   curl https://api.openai.com/v1/models \
+     -H "Authorization: Bearer YOUR_API_KEY"
+   
+   - Nếu trả về danh sách models → API key hợp lệ
+   - Nếu lỗi 401 → API key không hợp lệ
+
+PHÒNG TRÁNH:
+------------
+• Lưu API key vào file .env hoặc secrets
+• Không commit API key lên GitHub
+• Kiểm tra API key định kỳ
+• Sử dụng API key riêng cho mỗi dự án
+
+
+================================================================================
+3. LỖI QUÁ TẢI API (429 TOO MANY REQUESTS)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "OpenAI API đang quá tải"
+• Thông báo: "Đã vượt quá giới hạn API"
+• Lỗi 429 Too Many Requests
+
+NGUYÊN NHÂN:
+------------
+• Gửi quá nhiều request trong thời gian ngắn
+• Vượt quá rate limit của OpenAI (ví dụ: 3 requests/phút cho free tier)
+• Vượt quá quota hàng tháng
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Đợi 1-2 phút rồi thử lại
+   - Rate limit sẽ reset sau 1 phút
+   - Không spam nút "Tạo Video"
+
+✅ Bước 2: Kiểm tra rate limit
+   - Đăng nhập: https://platform.openai.com/account/limits
+   - Xem giới hạn của tier hiện tại
+   - Free tier: 3 requests/phút, 200 requests/ngày
+   - Paid tier: cao hơn tùy gói
+
+✅ Bước 3: Nâng cấp tier
+   - Nếu cần sử dụng nhiều, nâng cấp lên Tier 1 trở lên
+   - Nạp credit vào tài khoản OpenAI
+   - Tier càng cao, rate limit càng lớn
+
+PHÒNG TRÁNH:
+------------
+• Không spam nút "Tạo Video"
+• Đợi video trước hoàn thành mới tạo video mới
+• Sử dụng cache để tránh gọi API lặp lại
+• Nâng cấp tier nếu sử dụng thường xuyên
+
+
+================================================================================
+4. LỖI TIMEOUT (504 GATEWAY TIMEOUT)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "Yêu cầu quá lâu, OpenAI không phản hồi"
+• Thông báo: "Request timeout after 120 seconds"
+• Lỗi 504 Gateway Timeout
+
+NGUYÊN NHÂN:
+------------
+• Mô tả quá dài, phức tạp
+• OpenAI xử lý lâu hơn 120 giây
+• Kết nối Internet chậm
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Rút ngắn mô tả
+   - Giảm từ 5-10 câu xuống 1-2 câu
+   - Ví dụ tốt: "Trận Bạch Đằng năm 938"
+   - Ví dụ xấu: "Mô tả chi tiết về trận Bạch Đằng năm 938 với đầy đủ nguyên nhân, diễn biến, kết quả..."
+
+✅ Bước 2: Kiểm tra kết nối Internet
+   - Test tốc độ: https://fast.com
+   - Cần ít nhất 5 Mbps để ổn định
+   - Chuyển sang WiFi nếu đang dùng 4G
+
+✅ Bước 3: Thử lại vào giờ khác
+   - Giờ cao điểm (8-10h sáng, 19-21h tối) có thể chậm
+   - Thử vào sáng sớm hoặc đêm khuya
+
+PHÒNG TRÁNH:
+------------
+• Mô tả ngắn gọn, súc tích
+• Sử dụng WiFi thay vì 4G
+• Tránh giờ cao điểm
+
+
+================================================================================
+5. LỖI TẠO VIDEO (AI VIDEO SERVICE)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "Lỗi khi tạo video"
+• Video không được tạo sau khi có prompt
+• Lỗi từ AIVideoAuto service
+
+NGUYÊN NHÂN:
+------------
+• Access token AIVideoAuto không hợp lệ
+• Hết credit AIVideoAuto
+• Prompt không an toàn (unsafe content)
+• Lỗi máy chủ AIVideoAuto
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Kiểm tra access token
+   - Đăng nhập: https://aivideoauto.com/pages/account/apikeys
+   - Copy access token mới
+   - Cập nhật trong file lib/screens/home_screen.dart
+
+✅ Bước 2: Kiểm tra credit
+   - Đăng nhập: https://aivideoauto.com/pages/account
+   - Xem số credit còn lại
+   - Mỗi video 5s tốn ~1500 credits
+   - Mỗi video 15s tốn ~4500 credits
+   - Nạp thêm credit nếu cần
+
+✅ Bước 3: Kiểm tra nội dung
+   - Tránh nội dung bạo lực, nhạy cảm
+   - Tránh từ ngữ không phù hợp
+   - Sử dụng ngôn ngữ lịch sử, học thuật
+
+✅ Bước 4: Thử lại sau vài phút
+   - Máy chủ AIVideoAuto có thể tạm thời quá tải
+   - Đợi 2-3 phút rồi thử lại
+
+PHÒNG TRÁNH:
+------------
+• Kiểm tra credit trước khi tạo video
+• Sử dụng ngôn ngữ phù hợp, lịch sự
+• Backup access token ở nơi an toàn
+
+
+================================================================================
+6. LỖI KẾT NỐI MẠNG
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "Lỗi kết nối mạng"
+• Thông báo: "Không thể kết nối đến OpenAI"
+• SocketException, ClientException
+
+NGUYÊN NHÂN:
+------------
+• Không có kết nối Internet
+• WiFi/4G yếu hoặc không ổn định
+• Firewall chặn kết nối
+• DNS không phân giải được
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Kiểm tra kết nối
+   - Mở trình duyệt, thử truy cập Google.com
+   - Kiểm tra biểu tượng WiFi/4G trên điện thoại
+   - Thử bật/tắt chế độ máy bay
+
+✅ Bước 2: Chuyển đổi mạng
+   - Nếu đang dùng WiFi, thử chuyển sang 4G
+   - Nếu đang dùng 4G, thử chuyển sang WiFi
+   - Thử di chuyển đến nơi có sóng tốt hơn
+
+✅ Bước 3: Khởi động lại
+   - Khởi động lại app
+   - Khởi động lại điện thoại
+   - Khởi động lại router WiFi
+
+✅ Bước 4: Kiểm tra firewall/VPN
+   - Tắt VPN nếu đang bật
+   - Kiểm tra firewall có chặn app không
+   - Thử kết nối từ mạng khác
+
+PHÒNG TRÁNH:
+------------
+• Sử dụng WiFi ổn định
+• Kiểm tra kết nối trước khi tạo video
+• Tránh sử dụng VPN không ổn định
+
+
+================================================================================
+7. LỖI UNSAFE GENERATION (NỘI DUNG KHÔNG AN TOÀN)
+================================================================================
+
+TRIỆU CHỨNG:
+------------
+• Thông báo: "Prompt không an toàn, đang thử lại..."
+• Thông báo: "Video không thể tạo sau 3 lần thử"
+• App tự động retry nhiều lần
+
+NGUYÊN NHÂN:
+------------
+• Nội dung chứa bạo lực, máu me
+• Nội dung nhạy cảm chính trị
+• Nội dung không phù hợp với chính sách OpenAI/AIVideoAuto
+
+CÁCH XỬ LÝ:
+------------
+✅ Bước 1: Thay đổi cách diễn đạt
+   - Tránh: "giết", "chém", "máu", "tử vong"
+   - Dùng: "chiến đấu", "đánh bại", "chiến thắng"
+   - Ví dụ: "Trận Bạch Đằng năm 938" thay vì "Giết quân Nguyên ở Bạch Đằng"
+
+✅ Bước 2: Tập trung vào khía cạnh tích cực
+   - Nhấn mạnh tinh thần yêu nước, kiên cường
+   - Tránh mô tả chi tiết bạo lực
+   - Ví dụ: "Chiến thắng vẻ vang" thay vì "Tiêu diệt địch"
+
+✅ Bước 3: Sử dụng ngôn ngữ học thuật
+   - Dùng thuật ngữ lịch sử chính thống
+   - Tránh ngôn ngữ cảm tính, phóng đại
+   - Ví dụ: "Kháng chiến" thay vì "Đánh đuổi"
+
+PHÒNG TRÁNH:
+------------
+• Sử dụng ngôn ngữ lịch sử, học thuật
+• Tránh mô tả bạo lực chi tiết
+• Tập trung vào ý nghĩa, giá trị lịch sử
+
+
+================================================================================
+8. TIPS VÀ TRICKS
+================================================================================
+
+MÔ TÁ TỐT:
+----------
+✅ "Trận Bạch Đằng năm 938"
+✅ "Chiến thắng Điện Biên Phủ 1954"
+✅ "Bác Hồ đọc Tuyên ngôn Độc lập"
+✅ "Khởi nghĩa Hai Bà Trưng"
+✅ "Lý Thường Kiệt đánh Tống"
+
+MÔ TẢ XẤU:
+----------
+❌ "Giết quân Nguyên ở sông Bạch Đằng với máu me"
+❌ "Mô tả chi tiết về cách Trần Hưng Đạo chém địch"
+❌ "Cảnh tượng tàn khốc của chiến tranh"
+❌ "Bạo lực và đổ máu trong lịch sử"
+
+THỜI ĐIỂM TỐT NHẤT:
+-------------------
+• Sáng sớm: 6-8h (ít người dùng)
+• Đêm khuya: 22-24h (ít người dùng)
+• Cuối tuần: Thứ 7, Chủ nhật
+
+THỜI ĐIỂM NÊN TRÁNH:
+--------------------
+• Giờ cao điểm: 8-10h sáng, 19-21h tối
+• Giờ nghỉ trưa: 12-13h
+• Đầu tháng (nhiều người dùng OpenAI)
+
+KIỂM TRA TRƯỚC KHI TẠO VIDEO:
+------------------------------
+☑ Kết nối Internet ổn định (>5 Mbps)
+☑ API key OpenAI còn hoạt động
+☑ Credit AIVideoAuto đủ (>1500 cho 5s, >4500 cho 15s)
+☑ Mô tả ngắn gọn, rõ ràng
+☑ Ngôn ngữ phù hợp, không nhạy cảm
+
+
+================================================================================
+9. LIÊN HỆ HỖ TRỢ
+================================================================================
+
+NẾU VẪN GẶP LỖI SAU KHI THỬ TẤT CẢ CÁCH TRÊN:
+---------------------------------------------
+
+1. Kiểm tra GitHub Issues:
+   https://github.com/[your-repo]/histovision/issues
+   
+2. Tạo issue mới với thông tin:
+   • Mô tả lỗi chi tiết
+   • Screenshot lỗi
+   • Các bước đã thử
+   • Phiên bản app
+   • Hệ điều hành (Android/iOS)
+   
+3. Liên hệ email hỗ trợ:
+   support@histovision.com (nếu có)
+
+4. Tham gia cộng đồng:
+   • Discord: [link]
+   • Facebook Group: [link]
+   • Telegram: [link]
+
+
+================================================================================
+                            KẾT LUẬN
+================================================================================
+
+Hầu hết các lỗi đều có thể khắc phục bằng cách:
+• Đợi vài phút rồi thử lại
+• Kiểm tra kết nối Internet
+• Kiểm tra API keys và credits
+• Sử dụng mô tả ngắn gọn, phù hợp
+
+Nếu vẫn gặp vấn đề, hãy liên hệ hỗ trợ với thông tin chi tiết.
+
+Chúc bạn sử dụng HistoVision hiệu quả!
+
+================================================================================
+                    © 2025 HistoVision - Học lịch sử bằng AI
+================================================================================

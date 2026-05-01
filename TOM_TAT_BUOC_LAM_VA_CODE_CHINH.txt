@@ -1,0 +1,538 @@
+================================================================================
+    TÓM TẮT CÁC BƯỚC LÀM DỰ ÁN HISTOVISION
+    VÀ MỘT SỐ ĐOẠN CODE CHÍNH (CÓ GIẢI THÍCH TIẾNG VIỆT)
+================================================================================
+
+PHẦN 1: CÁC BƯỚC LÀM DỰ ÁN
+================================================================================
+
+BƯỚC 1: CHUẨN BỊ MÔI TRƯỜNG
+────────────────────────────────────────────────────────────────────────────
+1. Cài đặt Flutter SDK (phiên bản 3.7.0+)
+2. Cài đặt Android Studio hoặc VS Code
+3. Tạo project Flutter mới: flutter create histovision
+4. Cài đặt dependencies: flutter pub get
+
+BƯỚC 2: TẠO CẤU TRÚC THƯ MỤC
+────────────────────────────────────────────────────────────────────────────
+lib/
+├── main.dart                    # File khởi chạy app
+├── screens/
+│   └── home_screen.dart         # Màn hình chính tạo video
+└── services/
+    ├── ai_video_service.dart    # Service tạo video với Sora 2.0
+    ├── openai_service.dart      # Service tạo prompt với GPT-5
+    └── gallery_service.dart     # Service lưu video
+
+BƯỚC 3: CẤU HÌNH API KEYS
+────────────────────────────────────────────────────────────────────────────
+- Lấy OpenAI API Key từ https://platform.openai.com
+- Lấy AIVideoAuto Access Token từ https://aivideoauto.com
+- Cập nhật vào home_screen.dart
+
+BƯỚC 4: VIẾT CODE CÁC SERVICE
+────────────────────────────────────────────────────────────────────────────
+- openai_service.dart: Tạo prompt từ văn bản
+- ai_video_service.dart: Tạo video từ prompt
+- gallery_service.dart: Lưu video vào gallery
+
+BƯỚC 5: TẠO UI MÀN HÌNH CHÍNH
+────────────────────────────────────────────────────────────────────────────
+- TextField để nhập văn bản
+- 2 nút: "Tạo Video 5 giây" và "Tạo Video 15 giây"
+- Hiển thị tiến trình tạo video
+- Màn hình phát video
+
+BƯỚC 6: TEST VÀ SỬA LỖI
+────────────────────────────────────────────────────────────────────────────
+- Test tạo video với các sự kiện lịch sử khác nhau
+- Sửa lỗi và tối ưu hóa
+- Cải thiện UI/UX
+
+================================================================================
+PHẦN 2: CODE CHÍNH VÀ GIẢI THÍCH
+================================================================================
+
+ĐOẠN CODE 1: HÀM TẠO VIDEO 5 GIÂY (home_screen.dart)
+────────────────────────────────────────────────────────────────────────────
+
+Future<void> _generateVideo() async {
+  // Bước 1: Lấy văn bản từ TextField và chuẩn hóa
+  String text = _textController.text.trim();
+  text = _normalizeDescription(text);
+  
+  // Kiểm tra văn bản không rỗng
+  if (text.isEmpty) {
+    _showErrorDialog('Vui lòng nhập text để tạo video');
+    return;
+  }
+  
+  // Bước 2: Hiển thị trạng thái đang tạo video
+  setState(() {
+    _isGenerating = true;  // Đặt cờ để disable các nút
+  });
+  
+  // Bước 3: Retry logic (thử lại tối đa 3 lần nếu lỗi)
+  const maxRetries = 3;
+  int retryCount = 0;
+  
+  while (retryCount < maxRetries) {
+    try {
+      // Bước 4: Tạo prompt chi tiết từ văn bản bằng GPT-5
+      _showLoadingMessage('Đang tạo prompt từ GPT...');
+      final prompt = await _openAIService.generatePrompt(text);
+      
+      // Bước 5: Tạo video từ prompt bằng Sora 2.0 (5 giây)
+      _showLoadingMessage('Đang tạo video từ prompt...');
+      final videoUrl = await _videoService.generateVideoFromText(prompt);
+      
+      // Bước 6: Tự động lưu video vào gallery
+      await _galleryService.saveVideo(
+        videoUrl: videoUrl,
+        title: text,
+        sourceType: 'text',
+      );
+      
+      // Bước 7: Chuyển đến màn hình phát video
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoPlayerScreen(videoUrl: videoUrl),
+        ),
+      );
+      
+      break; // Thành công, thoát khỏi vòng lặp retry
+      
+    } catch (e) {
+      // Nếu lỗi, tăng số lần retry và thử lại
+      retryCount++;
+      if (retryCount >= maxRetries) {
+        _showErrorDialog('Lỗi khi tạo video: $e');
+        break;
+      }
+    }
+  }
+  
+  // Bước 8: Tắt trạng thái đang tạo video
+  setState(() {
+    _isGenerating = false;
+  });
+}
+
+GIẢI THÍCH:
+- async/await: Cho phép chờ đợi các thao tác mất thời gian (gọi API)
+- setState(): Cập nhật giao diện khi trạng thái thay đổi
+- try-catch: Bắt lỗi và xử lý, tránh app bị crash
+- Retry logic: Thử lại nếu lỗi (ví dụ: mạng chậm, API quá tải)
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 2: HÀM TẠO VIDEO TỪ PROMPT (ai_video_service.dart)
+────────────────────────────────────────────────────────────────────────────
+
+Future<String> generateVideoFromText(String prompt) async {
+  // Thêm yêu cầu thoại phải bằng tiếng Việt
+  prompt += '\n\nNOTE: The dialogues in the video must be in Vietnamese.';
+  
+  // Chuẩn bị dữ liệu gửi đến API
+  final requestBody = {
+    'access_token': accessToken,      // Token xác thực
+    'domain': domain,                 // Domain của AIVideoAuto
+    'model': 'sora_2_0',             // Sử dụng model Sora 2.0
+    'privacy': 'PRIVATE',            // Video riêng tư
+    'prompt': prompt,                // Prompt đã tạo từ GPT-5
+    'duration': '5',                 // Độ dài video: 5 giây
+    'ratio': '16:9',                 // Tỷ lệ khung hình
+    'project_id': 'default',         // ID dự án
+    'images': jsonEncode([]),        // Không có ảnh (chỉ text)
+  };
+  
+  // Gửi request HTTP POST đến API
+  final response = await http.post(
+    Uri.parse('$baseUrl/create-video'),  // URL API
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: requestBody,
+  );
+  
+  // Kiểm tra response
+  if (response.statusCode == 200) {
+    // Parse dữ liệu JSON từ response
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    
+    if (data['videoInfo'] != null) {
+      // Lấy videoId từ response
+      final videoId = data['videoInfo']['id_base'] ?? data['videoInfo']['id'];
+      
+      // Polling: Kiểm tra trạng thái video mỗi 10 giây
+      // Cho đến khi video hoàn thành
+      return await _waitForVideoCompletion(videoId);
+    }
+  }
+  
+  // Nếu lỗi, throw exception
+  throw Exception('Error creating video');
+}
+
+GIẢI THÍCH:
+- http.post(): Gửi request HTTP đến server
+- jsonDecode(): Chuyển đổi chuỗi JSON thành object Dart
+- Polling: Kiểm tra định kỳ xem video đã xong chưa (vì tạo video mất thời gian)
+- ?? : Toán tử null-coalescing, nếu bên trái null thì dùng bên phải
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 3: HÀM POLLING TRẠNG THÁI VIDEO (ai_video_service.dart)
+────────────────────────────────────────────────────────────────────────────
+
+Future<String> _waitForVideoCompletion(String videoId) async {
+  const maxAttempts = 60;              // Tối đa 60 lần kiểm tra
+  const pollInterval = Duration(seconds: 10);  // Mỗi 10 giây kiểm tra 1 lần
+  
+  for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Kiểm tra xem người dùng có hủy không
+    if (_isCancelled) {
+      throw GenerationCancelledException();
+    }
+    
+    // Đợi 10 giây trước khi kiểm tra lần tiếp theo
+    await Future.delayed(pollInterval);
+    
+    // Kiểm tra trạng thái video
+    final videoInfo = await checkVideoStatus(videoId);
+    final status = videoInfo['status'] as String;
+    
+    // Nếu video đã hoàn thành
+    if (status == 'MEDIA_GENERATION_STATUS_SUCCESSFUL') {
+      // Lấy URL để tải video
+      final downloadUrl = videoInfo['download_url'] as String?;
+      if (downloadUrl != null && downloadUrl.isNotEmpty) {
+        return downloadUrl;  // Trả về URL video
+      }
+    }
+    // Nếu video bị lỗi
+    else if (status.contains('FAILED') || status.contains('ERROR')) {
+      throw Exception('Video generation failed: $status');
+    }
+    // Nếu chưa xong, tiếp tục vòng lặp
+  }
+  
+  // Nếu quá 10 phút (60 * 10 giây) vẫn chưa xong → timeout
+  throw Exception('Video generation timed out');
+}
+
+GIẢI THÍCH:
+- Polling: Kỹ thuật kiểm tra định kỳ thay vì chờ callback
+- Future.delayed(): Tạm dừng code trong một khoảng thời gian
+- for loop: Lặp lại cho đến khi video xong hoặc hết thời gian
+- Exception: Ném lỗi để hàm gọi xử lý
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 4: HÀM TẠO PROMPT VỚI GPT-5 (openai_service.dart)
+────────────────────────────────────────────────────────────────────────────
+
+Future<String> generatePrompt(String userText) async {
+  // Thay thế [topic] trong template bằng văn bản người dùng nhập
+  final userPrompt = _userPromptTemplate.replaceAll('[topic]', userText);
+  
+  // Chuẩn bị messages để gửi đến GPT-5
+  final List<Map<String, dynamic>> messages = [
+    {'role': 'user', 'content': userPrompt},
+  ];
+  
+  // Gửi request đến OpenAI API
+  final response = await http.post(
+    Uri.parse('https://api.openai.com/v1/chat/completions'),
+    headers: {
+      'Authorization': 'Bearer $_apiKey',  // API key để xác thực
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: json.encode({
+      'model': 'gpt-5',        // Sử dụng GPT-5
+      'messages': messages,     // Prompt đã chuẩn bị
+    }),
+  );
+  
+  // Xử lý response
+  if (response.statusCode == 200) {
+    // Parse JSON response
+    final data = json.decode(utf8.decode(response.bodyBytes));
+    
+    // Lấy nội dung prompt đã được GPT-5 tạo
+    final content = data['choices'][0]['message']['content'] as String;
+    
+    return content.trim();  // Trả về prompt đã tạo
+  } else {
+    // Nếu lỗi, throw exception
+    throw Exception('Error generating prompt');
+  }
+}
+
+GIẢI THÍCH:
+- Template: Mẫu có sẵn, chỉ cần thay thế phần [topic]
+- json.encode(): Chuyển object Dart thành chuỗi JSON
+- Authorization header: Gửi API key để xác thực
+- choices[0]: Lấy kết quả đầu tiên từ danh sách responses
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 5: TEMPLATE PROMPT CHO VIDEO 5 GIÂY (openai_service.dart)
+────────────────────────────────────────────────────────────────────────────
+
+static const String _userPromptTemplate = """
+Bạn là chuyên gia lịch sử Việt Nam và kỹ thuật prompt engineering cho AI 
+text-to-video Sora. Nhiệm vụ của bạn là chuyển đổi chủ đề lịch sử Việt Nam 
+thành prompt chi tiết cho video 5 giây, chia thành các scenes hợp lý.
+
+### BƯỚC 2: XÂY DỰNG CÁC SCENES CHO VIDEO 5 GIÂY
+
+Chia video thành **2-3 scenes**, phân bổ thời gian hợp lý (mỗi scene 1-2 giây):
+- **Scenes đầu**: Thiết lập bối cảnh, môi trường, dẫn dắt
+- **Scenes giữa**: Phát triển sự kiện, hành động chính, cao trào
+- **Scene cuối**: Đỉnh điểm với thoại nhân vật, thể hiện tinh thần
+
+### BƯỚC 3: MỖI SCENE PHẢI CÓ 5 YẾU TỐ
+
+**1. Environment (Môi trường):**
+- Thời kỳ lịch sử cụ thể (thế kỷ mấy)
+- Địa điểm Việt Nam chi tiết
+- Ánh sáng, thời tiết, âm thanh môi trường
+
+**2. Camera Directions (Góc máy):**
+- Loại shot: wide shot, medium shot, close-up, aerial...
+- Chuyển động camera: tracking, push-in, pan, tilt...
+
+**3. Character/Action (Nhân vật/Hành động):**
+- Nhân vật: Vietnamese people with East Asian features
+- Trang phục Việt Nam theo thời kỳ
+- Hành động cụ thể, rõ ràng
+
+**4. Soundtrack/SFX (Âm thanh):**
+- Nhạc nền: war drums, trống chiến, sáo trúc...
+- Hiệu ứng âm thanh: tiếng nước, gió, lửa...
+
+**5. Visual Style (Phong cách hình ảnh):**
+- Cinematic, photorealistic, epic...
+
+### BƯỚC 4: THOẠI NHÂN VẬT
+
+**BẮT BUỘC** phải có ít nhất 1 scene có thoại nhân vật:
+- Thoại phải bằng **TIẾNG VIỆT** và đặt trong dấu ngoặc kép " "
+- Ví dụ: "Đánh đuổi giặc Nguyên!", "Tiến lên, nhấn chìm chúng nó!"
+
+CHỦ ĐỀ: [topic]
+""";
+
+GIẢI THÍCH:
+- Template này là hướng dẫn cho GPT-5 biết cách tạo prompt
+- GPT-5 sẽ đọc template và tạo prompt chi tiết theo yêu cầu
+- [topic] sẽ được thay thế bằng văn bản người dùng nhập
+- Template đảm bảo prompt có đủ 5 yếu tố và thoại tiếng Việt
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 6: UI MÀN HÌNH CHÍNH (home_screen.dart)
+────────────────────────────────────────────────────────────────────────────
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(...),  // Nền gradient đẹp
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header: Tiêu đề ứng dụng
+            Container(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                'TÁI HIỆN LỊCH SỬ VIỆT NAM',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            
+            // TextField: Nhập văn bản
+            TextField(
+              controller: _textController,  // Controller để lấy text
+              maxLines: 5,                   // Cho phép nhập nhiều dòng
+              enabled: !_isGenerating,        // Disable khi đang tạo video
+              decoration: InputDecoration(
+                hintText: 'Nhập mô tả sự kiện lịch sử Việt Nam...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            
+            SizedBox(height: 20),
+            
+            // Nút "Tạo Video 5 giây"
+            ElevatedButton(
+              onPressed: _isGenerating ? null : _generateVideo,
+              child: Text('Tạo Video 5 giây'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: Size(double.infinity, 60),
+              ),
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Nút "Tạo Video 15 giây"
+            ElevatedButton(
+              onPressed: _isGenerating ? null : _generateVideo15s,
+              child: Text('Tạo Video 15 giây'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                minimumSize: Size(double.infinity, 60),
+              ),
+            ),
+            
+            // Hiển thị loading khi đang tạo video
+            if (_isGenerating)
+              CircularProgressIndicator(),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+GIẢI THÍCH:
+- Scaffold: Widget cơ bản của Flutter, chứa app bar và body
+- SafeArea: Đảm bảo nội dung không bị che bởi notch hoặc status bar
+- TextField: Ô nhập văn bản, có controller để lấy giá trị
+- ElevatedButton: Nút bấm, disable khi đang tạo video
+- setState(): Khi _isGenerating thay đổi, UI tự động cập nhật
+
+────────────────────────────────────────────────────────────────────────────
+
+ĐOẠN CODE 7: HÀM LƯU VIDEO VÀO GALLERY (gallery_service.dart)
+────────────────────────────────────────────────────────────────────────────
+
+Future<void> saveVideo({
+  required String videoUrl,
+  required String title,
+  required String sourceType,
+}) async {
+  try {
+    // Bước 1: Tải video từ URL về
+    final response = await http.get(Uri.parse(videoUrl));
+    
+    if (response.statusCode == 200) {
+      // Bước 2: Lưu video tạm thời vào thư mục temp
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/video_${DateTime.now().millisecondsSinceEpoch}.mp4');
+      await file.writeAsBytes(response.bodyBytes);
+      
+      // Bước 3: Lưu vào gallery của thiết bị
+      await Gal.putImageBytes(
+        file.readAsBytesSync(),  // Đọc bytes của file video
+        album: 'HistoVision',     // Tên album trong gallery
+        name: title,              // Tên file video
+      );
+      
+      print('✅ Video saved to gallery: $title');
+    }
+  } catch (e) {
+    print('❌ Error saving video: $e');
+    throw Exception('Failed to save video: $e');
+  }
+}
+
+GIẢI THÍCH:
+- http.get(): Tải file từ URL về
+- getTemporaryDirectory(): Lấy thư mục tạm thời của app
+- writeAsBytes(): Ghi dữ liệu bytes vào file
+- Gal.putImageBytes(): Plugin để lưu file vào gallery
+- DateTime.now(): Tạo tên file unique bằng timestamp
+
+================================================================================
+PHẦN 3: QUY TRÌNH TỔNG QUAN
+================================================================================
+
+QUY TRÌNH TẠO VIDEO TỪ VĂN BẢN:
+
+1. NGƯỜI DÙNG NHẬP VĂN BẢN
+   └─> Ví dụ: "Trận Bạch Đằng năm 938"
+   
+2. APP GỬI ĐẾN GPT-5
+   └─> GPT-5 phân tích và tạo prompt chi tiết
+   └─> Prompt có 2-3 scenes, mỗi scene có 5 yếu tố
+   
+3. APP GỬI PROMPT ĐẾN SORA 2.0
+   └─> Sora 2.0 tạo video từ prompt
+   └─> Trả về videoId
+   
+4. APP POLLING TRẠNG THÁI
+   └─> Kiểm tra mỗi 10 giây
+   └─> Khi video xong, nhận downloadUrl
+   
+5. APP TẢI VÀ LƯU VIDEO
+   └─> Tải video từ URL
+   └─> Lưu vào gallery
+   └─> Mở trình phát video
+
+THỜI GIAN:
+- Tạo prompt: 5-10 giây
+- Tạo video: 1-5 phút (tùy độ dài)
+- Tổng: 2-6 phút
+
+================================================================================
+PHẦN 4: CÁC KHÁI NIỆM QUAN TRỌNG
+================================================================================
+
+1. ASYNC/AWAIT:
+   - async: Hàm bất đồng bộ, có thể chờ đợi
+   - await: Chờ kết quả của hàm async
+   - Ví dụ: await http.post() → chờ API trả về
+
+2. SETSTATE():
+   - Cập nhật state và rebuild UI
+   - Flutter tự động vẽ lại widget khi state thay đổi
+   - Ví dụ: _isGenerating = true → nút bị disable
+
+3. TRY-CATCH:
+   - try: Thử chạy code, nếu lỗi thì vào catch
+   - catch: Xử lý lỗi, không để app crash
+   - Ví dụ: try { gọi API } catch { hiển thị lỗi }
+
+4. JSON:
+   - Định dạng dữ liệu text
+   - Dùng để trao đổi giữa app và server
+   - jsonDecode(): Chuyển text → object
+   - jsonEncode(): Chuyển object → text
+
+5. HTTP REQUEST:
+   - GET: Lấy dữ liệu (ví dụ: tải video)
+   - POST: Gửi dữ liệu (ví dụ: tạo video)
+   - Headers: Thông tin bổ sung (API key, content-type)
+   - Body: Dữ liệu gửi kèm
+
+6. POLLING:
+   - Kiểm tra định kỳ thay vì chờ callback
+   - Dùng khi server không hỗ trợ webhook
+   - Ví dụ: Kiểm tra video mỗi 10 giây
+
+================================================================================
+KẾT LUẬN
+================================================================================
+
+Dự án HistoVision sử dụng các công nghệ AI tiên tiến để tạo video lịch sử 
+tự động. Code được tổ chức rõ ràng theo kiến trúc Service-Oriented, dễ bảo 
+trì và mở rộng.
+
+Các điểm quan trọng:
+- Sử dụng async/await để xử lý bất đồng bộ
+- Xử lý lỗi cẩn thận với try-catch
+- Polling để kiểm tra trạng thái video
+- Tách biệt logic (services) và UI (screens)
+- Code có comment và giải thích rõ ràng
+
+================================================================================
+
+Tác giả: [Tên học sinh]
+Ngày: 2025
+
+================================================================================
+

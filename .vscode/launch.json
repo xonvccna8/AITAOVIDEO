@@ -1,0 +1,16 @@
+{
+  // VS Code launch configuration for Flutter.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter: Debug",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${env:LOCALAPPDATA}\\HistovisionAsciiWorkspace\\Histovision",
+      "preLaunchTask": "Prepare ASCII Workspace",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=GEMINI_API_KEY=${env:GEMINI_API_KEY}"]
+    }
+  ]
+}
+

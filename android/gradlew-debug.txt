@@ -1,0 +1,51 @@
+﻿
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if "Windows_NT" == "Windows_NT" setlocal
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set DEFAULT_JVM_OPTS= 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set DIRNAME=D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android\ 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if "D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android\" == "" set DIRNAME=. 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set APP_BASE_NAME=gradlew 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set APP_HOME=D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android\ 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\ 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set JAVA_EXE=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\/bin/java.exe 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if exist "C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\/bin/java.exe" goto init 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if not "Windows_NT" == "Windows_NT" goto win9xME_args 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if "@eval[2+2]" == "4" goto 4NT_args 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set CMD_LINE_ARGS= 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set _SKIP=2 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if "x-v" == "x" goto execute 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set CMD_LINE_ARGS=-v 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>goto execute 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>set CLASSPATH=D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android\\gradle\wrapper\gradle-wrapper.jar 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>"C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\/bin/java.exe"    "-Dorg.gradle.appname=gradlew" -classpath "D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android\\gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain -v 
+Error: Could not find or load main class org.gradle.wrapper.GradleWrapperMain
+Caused by: java.lang.ClassNotFoundException: org.gradle.wrapper.GradleWrapperMain
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if "1" == "0" goto mainEnd 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>rem the _cmd.exe /c_ return code! 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>if not "" == "" exit 1 
+
+D:\xo17\DU_AN_2025_2026\TUAN_HUY\DUYQUANG_DP\ChemiVision\android>exit /b 1 
+
