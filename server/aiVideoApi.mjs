@@ -333,6 +333,73 @@ const generateVideoWithRecovery = async ({ config, prompt, seconds, aspectRatio 
   }
 };
 
+export const handleAiVideoGenerate = async ({
+  method,
+  url = "",
+  body = {},
+  env = {},
+  root = process.cwd(),
+}) => {
+  if (method === "OPTIONS") {
+    return { statusCode: 204, payload: null };
+  }
+
+  if (method !== "POST") {
+    return { statusCode: 405, payload: { error: "Method not allowed" } };
+  }
+
+  const config = resolveConfig(root, env);
+
+  if (!config.accessToken) {
+    return {
+      statusCode: 500,
+      payload: {
+        error:
+          "Thieu AI_VIDEO_ACCESS_TOKEN. Hay them bien moi truong nay trong Vercel Project Settings.",
+      },
+    };
+  }
+
+  if (url?.includes("dryRun=1")) {
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        modelId: config.modelId,
+        resolution: config.resolution,
+        baseUrl: config.baseUrl,
+        domain: config.domain,
+        tokenSource: "server-side",
+      },
+    };
+  }
+
+  const prompt = String(body.prompt ?? "").trim();
+  if (!prompt) {
+    return {
+      statusCode: 400,
+      payload: { error: "Vui long gui prompt de tao video." },
+    };
+  }
+
+  const result = await generateVideoWithRecovery({
+    config,
+    prompt,
+    seconds: Number(body.seconds ?? 10),
+    aspectRatio: String(body.aspectRatio ?? "portrait"),
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      ...result,
+      title: body.title ?? "Video Toan hoc",
+      modelId: config.modelId,
+      resolution: config.resolution,
+    },
+  };
+};
+
 export const registerAiVideoApi = ({ server, env }) => {
   const root = server.config.root;
 
@@ -341,60 +408,23 @@ export const registerAiVideoApi = ({ server, env }) => {
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.method === "OPTIONS") {
-      res.statusCode = 204;
-      res.end();
-      return;
-    }
-
-    if (req.method !== "POST") {
-      sendJson(res, 405, { error: "Method not allowed" });
-      return;
-    }
-
     try {
-      const body = await readJsonBody(req);
-      const config = resolveConfig(root, env);
-
-      if (!config.accessToken) {
-        sendJson(res, 500, {
-          error:
-            "Thieu AI_VIDEO_ACCESS_TOKEN va khong doc duoc token tu lib/config/api_config.dart.",
-        });
-        return;
-      }
-
-      if (req.url?.includes("dryRun=1")) {
-        sendJson(res, 200, {
-          ok: true,
-          modelId: config.modelId,
-          resolution: config.resolution,
-          baseUrl: config.baseUrl,
-          domain: config.domain,
-          tokenSource: "server-side",
-        });
-        return;
-      }
-
-      const prompt = String(body.prompt ?? "").trim();
-      if (!prompt) {
-        sendJson(res, 400, { error: "Vui long gui prompt de tao video." });
-        return;
-      }
-
-      const result = await generateVideoWithRecovery({
-        config,
-        prompt,
-        seconds: Number(body.seconds ?? 10),
-        aspectRatio: String(body.aspectRatio ?? "portrait"),
+      const body = req.method === "POST" ? await readJsonBody(req) : {};
+      const result = await handleAiVideoGenerate({
+        method: req.method,
+        url: req.url,
+        body,
+        env,
+        root,
       });
 
-      sendJson(res, 200, {
-        ...result,
-        title: body.title ?? "Video Toan hoc",
-        modelId: config.modelId,
-        resolution: config.resolution,
-      });
+      if (result.statusCode === 204) {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
+      sendJson(res, result.statusCode, result.payload);
     } catch (error) {
       sendJson(res, 500, {
         error: error instanceof Error ? error.message : String(error),

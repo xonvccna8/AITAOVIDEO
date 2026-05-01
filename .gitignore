@@ -57,3 +57,5 @@ node_modules/
 dist/
 vite-dev.err
 vite-dev.log
+
+.vercel

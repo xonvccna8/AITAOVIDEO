@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/ai-video/generate.js": {
+      "maxDuration": 300
+    }
+  }
+}
