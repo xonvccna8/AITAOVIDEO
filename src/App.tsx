@@ -847,6 +847,9 @@ function VideoStudio({
         const video = await generateVideoClip({
           title: total === 1 ? topic : `${topic} - canh ${index}`,
           prompt,
+          onProgress: (message) => {
+            setCurrentStep(total === 1 ? message : `Video ${index}/${total}: ${message}`);
+          },
         });
 
         results.push(video);

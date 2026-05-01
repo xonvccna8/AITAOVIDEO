@@ -4,6 +4,9 @@
   "functions": {
     "api/ai-video/generate.js": {
       "maxDuration": 300
+    },
+    "api/ai-video/status.js": {
+      "maxDuration": 60
     }
   }
 }

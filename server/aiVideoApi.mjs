@@ -202,6 +202,53 @@ const postForm = async (url, body) => {
   return { response, text };
 };
 
+const readPredictionStatus = async ({ config, idBase }) => {
+  const url = `${config.baseUrl}/video`;
+  const { response, text } = await postForm(
+    url,
+    buildPollFormBody({ config, idBase }),
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Loi kiem tra trang thai job (${response.status}): ${responseSnippet(text)}`,
+    );
+  }
+
+  const data = JSON.parse(text);
+  const videoInfo = data.videoInfo ?? data.data ?? {};
+  const status = String(videoInfo.status ?? data.status ?? "PROCESSING").toUpperCase();
+  const downloadUrl = videoInfo.download_url ?? videoInfo.result_url;
+  const percent = videoInfo.percent ?? data.percent ?? "0";
+
+  if (status.includes("SUCCESS")) {
+    if (downloadUrl) {
+      return {
+        videoUrl: downloadUrl,
+        idBase,
+        status,
+        percent,
+      };
+    }
+    throw new Error("Video da hoan thanh nhung API khong tra ve download_url.");
+  }
+
+  if (status.includes("FAILED") || status === "ERROR" || status.includes("ERROR")) {
+    const message = videoInfo.message ?? data.message ?? "Unknown error";
+    throw new Error(`Loi khi tao video: ${message}`);
+  }
+
+  if (status.includes("CANCEL")) {
+    throw new Error("Job tao video da bi huy.");
+  }
+
+  return {
+    idBase,
+    status,
+    percent,
+  };
+};
+
 const waitForPredictionCompletion = async ({ config, idBase, prompt }) => {
   const isVeo = config.modelId.toLowerCase().includes("veo");
   const maxAttempts = isVeo ? 180 : 100;
@@ -212,44 +259,12 @@ const waitForPredictionCompletion = async ({ config, idBase, prompt }) => {
     await sleep(interval * 1000);
     elapsedSeconds += interval;
 
-    const url = `${config.baseUrl}/video`;
-    const { response, text } = await postForm(
-      url,
-      buildPollFormBody({ config, idBase }),
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Loi kiem tra trang thai job (${response.status}): ${responseSnippet(text)}`,
-      );
-    }
-
-    const data = JSON.parse(text);
-    const videoInfo = data.videoInfo ?? data.data ?? {};
-    const status = String(videoInfo.status ?? "").toUpperCase();
-    const downloadUrl = videoInfo.download_url ?? videoInfo.result_url;
-    const percent = videoInfo.percent ?? "0";
-
-    if (status.includes("SUCCESS")) {
-      if (downloadUrl) {
-        return {
-          videoUrl: downloadUrl,
-          idBase,
-          status,
-          percent,
-          elapsedSeconds,
-        };
-      }
-      throw new Error("Video da hoan thanh nhung API khong tra ve download_url.");
-    }
-
-    if (status.includes("FAILED") || status === "ERROR" || status.includes("ERROR")) {
-      const message = videoInfo.message ?? data.message ?? "Unknown error";
-      throw new Error(`Loi khi tao video: ${message}`);
-    }
-
-    if (status.includes("CANCEL")) {
-      throw new Error("Job tao video da bi huy.");
+    const statusResult = await readPredictionStatus({ config, idBase });
+    if (statusResult.videoUrl) {
+      return {
+        ...statusResult,
+        elapsedSeconds,
+      };
     }
   }
 
@@ -258,7 +273,13 @@ const waitForPredictionCompletion = async ({ config, idBase, prompt }) => {
   );
 };
 
-const createPrediction = async ({ config, prompt, seconds, aspectRatio }) => {
+const createPrediction = async ({
+  config,
+  prompt,
+  seconds,
+  aspectRatio,
+  waitForCompletion = false,
+}) => {
   const isVeo = config.modelId.toLowerCase().includes("veo");
   let preparedPrompt = preparePromptForBackend(prompt);
   const mappedDuration = isVeo ? 5 : mapDuration(seconds);
@@ -291,6 +312,7 @@ const createPrediction = async ({ config, prompt, seconds, aspectRatio }) => {
   const status = String(videoInfo.status ?? "").toUpperCase();
   const idBase = videoInfo.id_base;
   const downloadUrl = videoInfo.download_url ?? videoInfo.result_url;
+  const percent = videoInfo.percent ?? "0";
 
   if (status.includes("SUCCESS") && downloadUrl) {
     return {
@@ -312,7 +334,16 @@ const createPrediction = async ({ config, prompt, seconds, aspectRatio }) => {
     throw new Error(`API da nhan job nhung khong tra ve id_base: ${responseSnippet(text)}`);
   }
 
-  return waitForPredictionCompletion({ config, idBase, prompt: preparedPrompt });
+  if (waitForCompletion) {
+    return waitForPredictionCompletion({ config, idBase, prompt: preparedPrompt });
+  }
+
+  return {
+    idBase,
+    status: status || "PROCESSING",
+    percent,
+    elapsedSeconds: 0,
+  };
 };
 
 const generateVideoWithRecovery = async ({ config, prompt, seconds, aspectRatio }) => {
@@ -330,6 +361,14 @@ const generateVideoWithRecovery = async ({ config, prompt, seconds, aspectRatio 
       seconds: seconds <= 10 ? 10 : 15,
       aspectRatio,
     });
+  }
+};
+
+const queryParam = (url, name) => {
+  try {
+    return new URL(url, "http://localhost").searchParams.get(name);
+  } catch {
+    return null;
   }
 };
 
@@ -396,6 +435,68 @@ export const handleAiVideoGenerate = async ({
       title: body.title ?? "Video Toan hoc",
       modelId: config.modelId,
       resolution: config.resolution,
+      pollUrl: "/api/ai-video/status",
+      queued: !result.videoUrl,
+    },
+  };
+};
+
+export const handleAiVideoStatus = async ({
+  method,
+  url = "",
+  body = {},
+  env = {},
+  root = process.cwd(),
+}) => {
+  if (method === "OPTIONS") {
+    return { statusCode: 204, payload: null };
+  }
+
+  if (method !== "POST" && method !== "GET") {
+    return { statusCode: 405, payload: { error: "Method not allowed" } };
+  }
+
+  const config = resolveConfig(root, env);
+
+  if (!config.accessToken) {
+    return {
+      statusCode: 500,
+      payload: {
+        error:
+          "Thieu AI_VIDEO_ACCESS_TOKEN. Hay them bien moi truong nay trong Vercel Project Settings.",
+      },
+    };
+  }
+
+  if (url?.includes("dryRun=1")) {
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        tokenSource: "server-side",
+      },
+    };
+  }
+
+  const idBase = String(
+    body.idBase ?? body.id_base ?? queryParam(url, "idBase") ?? queryParam(url, "id_base") ?? "",
+  ).trim();
+
+  if (!idBase) {
+    return {
+      statusCode: 400,
+      payload: { error: "Thieu idBase/id_base de kiem tra trang thai video." },
+    };
+  }
+
+  const result = await readPredictionStatus({ config, idBase });
+
+  return {
+    statusCode: 200,
+    payload: {
+      ...result,
+      modelId: config.modelId,
+      resolution: config.resolution,
     },
   };
 };
@@ -411,6 +512,35 @@ export const registerAiVideoApi = ({ server, env }) => {
     try {
       const body = req.method === "POST" ? await readJsonBody(req) : {};
       const result = await handleAiVideoGenerate({
+        method: req.method,
+        url: req.url,
+        body,
+        env,
+        root,
+      });
+
+      if (result.statusCode === 204) {
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
+      sendJson(res, result.statusCode, result.payload);
+    } catch (error) {
+      sendJson(res, 500, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  server.middlewares.use("/api/ai-video/status", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    try {
+      const body = req.method === "POST" ? await readJsonBody(req) : {};
+      const result = await handleAiVideoStatus({
         method: req.method,
         url: req.url,
         body,

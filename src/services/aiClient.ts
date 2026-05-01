@@ -5,6 +5,8 @@ import type {
 } from "../types";
 
 const DEFAULT_VIDEO_ENDPOINT = "/api/ai-video/generate";
+const DEFAULT_VIDEO_STATUS_ENDPOINT = "/api/ai-video/status";
+const VIDEO_POLL_LIMIT = 120;
 
 const supportCopy: Record<LearningSupportType, string> = {
   simulation: "mo phong truc quan tung buoc",
@@ -44,11 +46,18 @@ export const buildMathPrompt = ({
 export const generateVideoClip = async ({
   title,
   prompt,
+  onProgress,
 }: {
   title: string;
   prompt: string;
+  onProgress?: (message: string) => void;
 }): Promise<GeneratedVideo> => {
   const proxyUrl = import.meta.env.VITE_AI_VIDEO_PROXY_URL?.trim() || DEFAULT_VIDEO_ENDPOINT;
+  const inferredStatusUrl = /\/generate(\?.*)?$/.test(proxyUrl)
+    ? proxyUrl.replace(/\/generate(\?.*)?$/, "/status")
+    : DEFAULT_VIDEO_STATUS_ENDPOINT;
+  const statusUrl =
+    import.meta.env.VITE_AI_VIDEO_STATUS_URL?.trim() || inferredStatusUrl;
 
   const response = await fetch(proxyUrl, {
     method: "POST",
@@ -64,6 +73,11 @@ export const generateVideoClip = async ({
   const data = (await response.json().catch(() => ({}))) as {
     videoUrl?: string;
     url?: string;
+    idBase?: string;
+    id_base?: string;
+    status?: string;
+    percent?: string | number;
+    pollUrl?: string;
     error?: string;
   };
 
@@ -74,9 +88,23 @@ export const generateVideoClip = async ({
     );
   }
 
-  const url = data.videoUrl ?? data.url;
+  let url = data.videoUrl ?? data.url;
+  const idBase = data.idBase ?? data.id_base;
+  if (!url && idBase) {
+    onProgress?.("Da tao job, dang cho AI render video...");
+    url = await pollVideoCompletion({
+      idBase,
+      statusUrl: data.pollUrl ?? statusUrl,
+      onProgress,
+    });
+  }
+
   if (!url) {
-    throw new Error("API tao video khong tra ve videoUrl/download_url.");
+    throw new Error(
+      data.status
+        ? `API chua tra ve videoUrl/download_url. Trang thai hien tai: ${data.status}.`
+        : "API tao video khong tra ve videoUrl/download_url.",
+    );
   }
 
   return {
@@ -85,6 +113,68 @@ export const generateVideoClip = async ({
     prompt,
     url,
   };
+};
+
+const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+const pollDelay = (attempt: number) => {
+  if (attempt <= 4) return 2500;
+  if (attempt <= 18) return 5000;
+  return 8000;
+};
+
+const statusMessage = (status?: string, percent?: string | number) => {
+  const percentText =
+    percent === undefined || percent === null || String(percent) === "0"
+      ? ""
+      : ` ${percent}%`;
+  return `Dang render video${percentText}${status ? ` (${status})` : ""}...`;
+};
+
+const pollVideoCompletion = async ({
+  idBase,
+  statusUrl,
+  onProgress,
+}: {
+  idBase: string;
+  statusUrl: string;
+  onProgress?: (message: string) => void;
+}) => {
+  let lastStatus = "PROCESSING";
+
+  for (let attempt = 1; attempt <= VIDEO_POLL_LIMIT; attempt += 1) {
+    await sleep(pollDelay(attempt));
+
+    const response = await fetch(statusUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idBase }),
+    });
+
+    const data = (await response.json().catch(() => ({}))) as {
+      videoUrl?: string;
+      url?: string;
+      status?: string;
+      percent?: string | number;
+      error?: string;
+    };
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ?? `API kiem tra trang thai video loi ${response.status}.`,
+      );
+    }
+
+    const videoUrl = data.videoUrl ?? data.url;
+    if (videoUrl) return videoUrl;
+
+    lastStatus = data.status ?? lastStatus;
+    onProgress?.(statusMessage(data.status, data.percent));
+  }
+
+  throw new Error(
+    `Video chua hoan thanh sau thoi gian cho. Ma job: ${idBase}. Trang thai cuoi: ${lastStatus}.`,
+  );
 };
 
 export const askMathAssistant = async (question: string, language: "vi" | "en") => {
