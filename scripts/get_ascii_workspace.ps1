@@ -1,8 +1,8 @@
 param()
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$asciiBase = Join-Path $env:LOCALAPPDATA 'HistovisionAsciiWorkspace'
-$junctionPath = Join-Path $asciiBase 'Histovision'
+$asciiBase = Join-Path $env:LOCALAPPDATA 'VideoToanHocAsciiWorkspace'
+$junctionPath = Join-Path $asciiBase 'VideoToanHoc'
 
 New-Item -ItemType Directory -Path $asciiBase -Force | Out-Null
 
