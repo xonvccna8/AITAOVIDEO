@@ -51,6 +51,8 @@ import {
   buildMathPrompt,
   generateVideoClip,
   mergeVideoClips,
+  saveVideosToDevice,
+  saveVideoToDevice,
 } from "./services/aiClient";
 import {
   createClass,
@@ -818,6 +820,7 @@ function VideoStudio({
   const [currentStep, setCurrentStep] = useState("");
   const [promptPreview, setPromptPreview] = useState("");
   const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideo[]>([]);
+  const [isSavingLocal, setIsSavingLocal] = useState(false);
 
   const lesson = useMemo(() => buildLesson(topic), [topic]);
 
@@ -894,6 +897,48 @@ function VideoStudio({
       onToast(error instanceof Error ? error.message : "Khong the tao video.", "error");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const describeLocalSave = (count: number, mode: "folder" | "downloads", fallbackCount: number) => {
+    if (mode === "folder" && fallbackCount === 0) {
+      return `Da luu ${count} video vao thu muc tren may.`;
+    }
+    if (fallbackCount > 0) {
+      return `Da gui ${count} video ve may. Co ${fallbackCount} video dung che do tai xuong du phong.`;
+    }
+    return `Da gui ${count} video vao Downloads cua trinh duyet.`;
+  };
+
+  const handleSaveVideoToDevice = async (video: GeneratedVideo) => {
+    setIsSavingLocal(true);
+    try {
+      const result = await saveVideoToDevice({
+        video,
+        onProgress: setCurrentStep,
+      });
+      onToast(describeLocalSave(result.count, result.mode, result.fallbackCount), "success");
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : "Khong the luu video ve may.", "error");
+    } finally {
+      setIsSavingLocal(false);
+      setCurrentStep("");
+    }
+  };
+
+  const handleSaveAllToDevice = async () => {
+    setIsSavingLocal(true);
+    try {
+      const result = await saveVideosToDevice({
+        videos: generatedVideos,
+        onProgress: setCurrentStep,
+      });
+      onToast(describeLocalSave(result.count, result.mode, result.fallbackCount), "success");
+    } catch (error) {
+      onToast(error instanceof Error ? error.message : "Khong the luu tat ca video ve may.", "error");
+    } finally {
+      setIsSavingLocal(false);
+      setCurrentStep("");
     }
   };
 
@@ -985,7 +1030,7 @@ function VideoStudio({
             </label>
           </div>
 
-          {isGenerating ? (
+          {isGenerating || isSavingLocal ? (
             <div className="glass-panel flex items-center gap-3 p-4">
               <LoaderCircle className="h-5 w-5 animate-spin text-teal-100" />
               <span className="font-semibold text-white">{currentStep}</span>
@@ -1033,7 +1078,17 @@ function VideoStudio({
 
       {generatedVideos.length > 0 ? (
         <section className="space-y-4">
-          <h2 className="section-title">Video vua tao</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="section-title">Video vua tao</h2>
+            <Button
+              variant="ghost"
+              icon={isSavingLocal ? LoaderCircle : Download}
+              onClick={handleSaveAllToDevice}
+              disabled={isSavingLocal}
+            >
+              {isSavingLocal ? "Dang luu" : "Luu tat ca ve may"}
+            </Button>
+          </div>
           <div className="grid gap-4 lg:grid-cols-2">
             {generatedVideos.map((video) => (
               <article key={video.id} className="glass-card overflow-hidden">
@@ -1048,14 +1103,19 @@ function VideoStudio({
                         </span>
                       ) : null}
                     </div>
-                    <a
+                    <button
+                      type="button"
                       className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/10 text-slate-100 transition hover:bg-white/15"
-                      href={video.url}
-                      download={`${video.title}.mp4`}
                       title="Tai video"
+                      onClick={() => void handleSaveVideoToDevice(video)}
+                      disabled={isSavingLocal}
                     >
-                      <Download className="h-4 w-4" />
-                    </a>
+                      {isSavingLocal ? (
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-300">{video.prompt}</p>
                 </div>

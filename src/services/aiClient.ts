@@ -9,6 +9,28 @@ const DEFAULT_VIDEO_STATUS_ENDPOINT = "/api/ai-video/status";
 const DEFAULT_VIDEO_MERGE_ENDPOINT = "/api/ai-video/merge";
 const VIDEO_POLL_LIMIT = 120;
 
+type LocalWritableFile = {
+  write: (data: Blob) => Promise<void>;
+  close: () => Promise<void>;
+};
+
+type LocalFileHandle = {
+  createWritable: () => Promise<LocalWritableFile>;
+};
+
+type LocalDirectoryHandle = {
+  getFileHandle: (
+    name: string,
+    options?: { create?: boolean },
+  ) => Promise<LocalFileHandle>;
+};
+
+type LocalSaveResult = {
+  count: number;
+  mode: "folder" | "downloads";
+  fallbackCount: number;
+};
+
 const supportCopy: Record<LearningSupportType, string> = {
   simulation: "mo phong truc quan tung buoc",
   lesson: "bai giang ngan gon theo mach khai niem - vi du - ket luan",
@@ -164,6 +186,122 @@ export const mergeVideoClips = async ({
     url: URL.createObjectURL(blob),
     kind: "merged",
     sceneCount: videos.length,
+  };
+};
+
+const sanitizeFileName = (value: string, fallback = "video") => {
+  const safe =
+    value
+      .trim()
+      .replace(/[^\p{L}\p{N}_-]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 90) || fallback;
+  return safe.endsWith(".mp4") ? safe : `${safe}.mp4`;
+};
+
+const getDirectoryPicker = () =>
+  (window as Window & {
+    showDirectoryPicker?: () => Promise<LocalDirectoryHandle>;
+  }).showDirectoryPicker;
+
+const fetchVideoBlob = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Khong tai duoc video: HTTP ${response.status}`);
+  }
+  return response.blob();
+};
+
+const writeBlobToDirectory = async (
+  directory: LocalDirectoryHandle,
+  filename: string,
+  blob: Blob,
+) => {
+  const fileHandle = await directory.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+};
+
+const triggerBlobDownload = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+};
+
+const triggerUrlDownload = (url: string, filename: string) => {
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.target = "_blank";
+  anchor.rel = "noopener";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+};
+
+const pauseBetweenDownloads = () => sleep(350);
+
+export const saveVideoToDevice = async ({
+  video,
+  onProgress,
+}: {
+  video: GeneratedVideo;
+  onProgress?: (message: string) => void;
+}): Promise<LocalSaveResult> => {
+  return saveVideosToDevice({ videos: [video], onProgress });
+};
+
+export const saveVideosToDevice = async ({
+  videos,
+  onProgress,
+}: {
+  videos: GeneratedVideo[];
+  onProgress?: (message: string) => void;
+}): Promise<LocalSaveResult> => {
+  if (videos.length === 0) {
+    throw new Error("Chua co video de luu.");
+  }
+
+  const picker = getDirectoryPicker();
+  const directory = picker ? await picker() : null;
+  let savedCount = 0;
+  let fallbackCount = 0;
+
+  for (let index = 0; index < videos.length; index += 1) {
+    const video = videos[index];
+    const filename = sanitizeFileName(
+      videos.length === 1
+        ? video.title
+        : `${String(index + 1).padStart(2, "0")}-${video.title}`,
+    );
+    onProgress?.(`Dang luu video ${index + 1}/${videos.length} ve may...`);
+
+    try {
+      const blob = await fetchVideoBlob(video.url);
+      if (directory) {
+        await writeBlobToDirectory(directory, filename, blob);
+      } else {
+        triggerBlobDownload(blob, filename);
+        await pauseBetweenDownloads();
+      }
+      savedCount += 1;
+    } catch {
+      fallbackCount += 1;
+      triggerUrlDownload(video.url, filename);
+      await pauseBetweenDownloads();
+    }
+  }
+
+  return {
+    count: savedCount + fallbackCount,
+    mode: directory ? "folder" : "downloads",
+    fallbackCount,
   };
 };
 
