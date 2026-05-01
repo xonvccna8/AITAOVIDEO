@@ -140,6 +140,19 @@ const shouldRetryWithRecoveryProfile = (message) => {
   );
 };
 
+const needsChemistrySafetyFrame = (prompt) =>
+  /hno3|nitric acid|axit nitric|dieu che|thi nghiem|hoa chat|phan ung|acid|axit/i.test(
+    prompt,
+  );
+
+const addChemistrySafetyFrame = (prompt) => {
+  if (!needsChemistrySafetyFrame(prompt)) {
+    return prompt;
+  }
+
+  return `CHEMISTRY SAFETY: This is a safe classroom animation only. Do not show real laboratory procedure, chemical mixing order, heating, quantities, concentrations, apparatus setup, storage, or synthesis instructions. Use symbolic labels, diagrams, icons, and high-level concept visuals instead.\n\n${prompt}`;
+};
+
 const buildSaferPromptFrom = (basePrompt) =>
   `${basePrompt.trim()}\n\nSAFETY REQUIREMENTS: The video must be safe for all audiences, avoiding explicit violence, gore, blood, weapons usage, dangerous acts, hate speech, or adult content. Use inspirational, symbolic, and non-violent visuals instead.`;
 
@@ -281,7 +294,7 @@ const createPrediction = async ({
   waitForCompletion = false,
 }) => {
   const isVeo = config.modelId.toLowerCase().includes("veo");
-  let preparedPrompt = preparePromptForBackend(prompt);
+  let preparedPrompt = preparePromptForBackend(addChemistrySafetyFrame(prompt));
   const mappedDuration = isVeo ? 5 : mapDuration(seconds);
   const mappedRatio = isVeo ? "16:9" : mapAspectRatio(aspectRatio);
   const requestProjectId = nextRequestProjectId(config.projectId);
